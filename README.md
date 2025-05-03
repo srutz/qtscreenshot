@@ -11,6 +11,16 @@ cmake -S . -B build
 cmake --build build
 ```
 
+For a debug build, use:
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+```
+
+
+
+
+
 ## Usage
 
 ```bash
