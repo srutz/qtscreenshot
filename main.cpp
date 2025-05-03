@@ -3,12 +3,23 @@
 
 #include <QApplication>
 #include <QScreen>
+#include <QDebug>
 
 #include "screenshot.h"
+
+
+
+[[gnu::noinline]] auto plus2(auto a, auto b) {
+    return a + b;
+}
+
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    qDebug() << plus2(1, 2);
+    qDebug() << plus2((double) 1, static_cast<double>(2));
 
     Screenshot screenshot;
     screenshot.move(screenshot.screen()->availableGeometry().topLeft() + QPoint(20, 20));
@@ -16,4 +27,5 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
+
 

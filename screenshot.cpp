@@ -1,5 +1,6 @@
 #include "screenshot.h"
 #include "toast.h"
+#include "capture.h"
 #include <QClipboard>
 #include <QApplication>
 #include <QVBoxLayout>
@@ -12,6 +13,7 @@
 #include <QIcon>
 #include <QDialog>
 #include <QMessageBox>
+#include <QSystemTrayIcon>
 
 
 Screenshot::Screenshot()
@@ -22,10 +24,9 @@ Screenshot::Screenshot()
     mainLayout->addWidget(buttons);
     mainLayout->addStretch(1);
     auto buttonLayout = new QHBoxLayout(buttons);
-    int buttonWidth = 200;
+    int buttonWidth = 160;
     {
         auto selectionButton = new QPushButton("Selection", this);
-        selectionButton->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::ViewRestore));
         selectionButton->setFixedWidth(buttonWidth);
         buttonLayout->addWidget(selectionButton);
         connect(selectionButton, &QPushButton::clicked, this, [this]() {
@@ -36,26 +37,25 @@ Screenshot::Screenshot()
     if (false)
     {
         auto windowButton = new QPushButton("Active Window", this);
-        windowButton->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::ViewFullscreen));
         windowButton->setFixedWidth(buttonWidth);
         buttonLayout->addWidget(windowButton);
     }
 
     {
         auto screenButton = new QPushButton("Screen", this);
-        screenButton->setIcon(QIcon::fromTheme(QIcon::ThemeIcon::ViewFullscreen));
         screenButton->setFixedWidth(buttonWidth);
         buttonLayout->addWidget(screenButton);
         connect(screenButton, &QPushButton::clicked, this, [this]() {
-            auto screen = QGuiApplication::primaryScreen();
-            if (screen) {
-                auto screenshot = screen->grabWindow(0);
-                QApplication::clipboard()->setPixmap(screenshot);
-                auto msg = QString::fromUtf8(u8"📸 Capture complete. Screenshot saved to clipboard.");
-                Toast::showToast(this->m_overlay, msg, 3000);
-            }
+            Capture::captureScreenshot(this->m_overlay, nullptr);
         });
     }
+
+    buttonLayout->addSpacing(16);
+    buttonLayout->addWidget(new QLabel("Delay:", this));
+    m_delayBox = new QSpinBox(this);
+    m_delayBox->setSuffix(tr(" s"));
+    m_delayBox->setMaximum(180);
+    buttonLayout->addWidget(m_delayBox);
 
     m_overlay = new Overlay(this);
     setWindowTitle(tr("Screenshot"));
@@ -98,6 +98,33 @@ Screenshot::Screenshot()
     });
     helpMenu->addAction(aboutAction);
 
+    // setup tray icon
+    {
+        auto showAction = new QAction("Show", this);
+        connect(showAction, &QAction::triggered, this, [this]() {
+            this->show();
+        });
+        auto hideAction = new QAction("Hide", this);
+        connect(hideAction, &QAction::triggered, this, [this]() {
+            this->hide();
+        });
+        auto quitAction = new QAction("E&xit", this);
+        connect(quitAction, &QAction::triggered, this, [this]() {
+            QApplication::quit();
+        });
+
+        auto trayIconMenu = new QMenu(this);
+        trayIconMenu->addAction(showAction);
+        trayIconMenu->addAction(hideAction);
+        trayIconMenu->addSeparator();
+        trayIconMenu->addAction(quitAction);
+
+        auto trayIcon = new QSystemTrayIcon(this);
+        trayIcon->setIcon(QIcon::fromTheme("camera-photo"));
+        trayIcon->setContextMenu(trayIconMenu);
+        trayIcon->setToolTip("Qt Screenshot");
+        trayIcon->show();
+    }
 }
 
 Screenshot::~Screenshot()

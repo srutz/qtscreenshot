@@ -25,6 +25,7 @@ private slots:
 
 private:
     Overlay  *m_overlay;
+    QSpinBox *m_delayBox;
 };
 
 #endif // SCREENSHOT_H

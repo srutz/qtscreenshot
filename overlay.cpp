@@ -1,6 +1,7 @@
 
 #include "overlay.h"
 #include "toast.h"
+#include "capture.h"
 #include <QScreen>
 #include <QGuiApplication>
 #include <QTimer>
@@ -126,10 +127,6 @@ void Overlay::mouseReleaseEvent(QMouseEvent *event)
         this->dismiss();
         QTimer::singleShot(300, this, [this]() {
             captureScreenshot();
-            QRect selectionRect(m_mouseDownPos, m_mousePos);
-            selectionRect = selectionRect.normalized();
-            auto msg = QString::fromUtf8(u8"📸 Capture complete. Screenshot of size %1 x %2 saved to clipboard.").arg(selectionRect.size().width()).arg(selectionRect.size().height());
-            Toast::showToast(this, msg, 3000);
         });
     }
 }
@@ -156,12 +153,5 @@ void Overlay::captureScreenshot() const
     selectionRect = selectionRect.normalized();
     // translate selectionRect to global coordinates
     selectionRect.translate(this->mapToGlobal(QPoint(0, 0)));
-
-    QScreen *screen = QGuiApplication::primaryScreen();
-    if (screen) {
-        QPixmap screenshot = screen->grabWindow(0, 
-            selectionRect.x(), selectionRect.y(),
-            selectionRect.width(), selectionRect.height());
-        QApplication::clipboard()->setPixmap(screenshot);
-    }
+    Capture::captureScreenshot(this, &selectionRect);
 }

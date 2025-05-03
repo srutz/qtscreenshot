@@ -4,6 +4,16 @@
         "files.associations": {
             "qapplication": "cpp",
             "qscreen": "cpp",
-            "chrono": "cpp"
+            "chrono": "cpp",
+            "array": "cpp",
+            "list": "cpp",
+            "vector": "cpp",
+            "exception": "cpp",
+            "functional": "cpp",
+            "iosfwd": "cpp",
+            "new": "cpp",
+            "tuple": "cpp",
+            "type_traits": "cpp",
+            "utility": "cpp"
         },
 }
