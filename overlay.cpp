@@ -126,7 +126,6 @@ void Overlay::mouseReleaseEvent(QMouseEvent *event)
         this->dismiss();
         QTimer::singleShot(300, this, [this]() {
             captureScreenshot();
-            emit visibilityChanged(HIDDEN);
         });
     }
 }
@@ -146,12 +145,14 @@ void Overlay::updateUi() const
         .arg(QString("%1").arg(m_visibleTickCount - m_shownTicks, 2, 10, QChar('0'))));
 }   
 
-void Overlay::captureScreenshot() const
+void Overlay::captureScreenshot()
 {
     // Capture the screenshot of the selected area
     QRect selectionRect(m_mouseDownPos, m_mousePos);
     selectionRect = selectionRect.normalized();
     // translate selectionRect to global coordinates
     selectionRect.translate(this->mapToGlobal(QPoint(0, 0)));
-    Capture::captureScreenshot(dynamic_cast<Screenshot*>(this->parent()), &selectionRect);
+    Capture::captureScreenshot(dynamic_cast<Screenshot*>(this->parent()), true, selectionRect, [this] {
+        emit visibilityChanged(HIDDEN);
+    });
 }

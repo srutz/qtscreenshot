@@ -16,7 +16,7 @@ public:
 
 private:
     void updateUi() const;
-    void captureScreenshot() const;
+    void captureScreenshot();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
