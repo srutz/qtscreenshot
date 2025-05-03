@@ -22,7 +22,7 @@ Toast::Toast(const QString &message, int duration, QWidget *parent)
     setAttribute(Qt::WA_ShowWithoutActivating);
     auto layout = new QVBoxLayout(this);
     auto label = new QLabel(message, this);
-    label->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 5px;");
+    label->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 0.85); padding: 10px; border-radius: 5px;");
     label->setAlignment(Qt::AlignCenter);
     layout->addWidget(label, Qt::AlignCenter);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -36,7 +36,8 @@ void Toast::showAtTopCenterOf(QWidget *parentWindow)
         return;
     QRect parentGeometry = parentWindow->geometry();
     int x = parentGeometry.x() + (parentGeometry.width() - this->width()) / 2;
-    int y = parentGeometry.y() + parentGeometry.height() - this->height() - 8;
+    //int y = parentGeometry.y() + parentGeometry.height() - this->height() - 8;
+    int y = parentGeometry.y() + 8;
     move(x, y);
 
     show();
