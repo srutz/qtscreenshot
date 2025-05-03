@@ -1,5 +1,4 @@
 #include "screenshot.h"
-#include "toast.h"
 #include "capture.h"
 #include <QClipboard>
 #include <QApplication>
@@ -60,8 +59,10 @@ Screenshot::Screenshot()
     m_overlay = new Overlay(this);
     setWindowTitle(tr("Screenshot"));
     adjustSize();
-    connect(m_overlay, &Overlay::visibilityChanged, this, [this](bool visible) {
-        if (visible) {
+    connect(m_overlay, &Overlay::visibilityChanged, this, [this](OverlayVisiblity visible) {
+        if (visible == VISIBLE) {
+            this->hide();
+        } else if (visible == CAPTURING) {
             this->hide();
         } else {
             this->show();

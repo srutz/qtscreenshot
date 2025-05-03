@@ -20,8 +20,7 @@ public:
     ~Screenshot() override;
 
     Overlay* overlay() const { return m_overlay; }
-    QSpinBox* delayBox() const { return m_delayBox; }
-
+    int delaySeconds() const { return m_delayBox->value(); }
 
 protected:
 

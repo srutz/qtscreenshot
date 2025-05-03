@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QLabel>
 
+enum OverlayVisiblity { HIDDEN, CAPTURING, VISIBLE };
+
 class Overlay : public QWidget {
     Q_OBJECT
 
@@ -35,7 +37,7 @@ private:
     QPoint m_mousePos;
 
 signals:
-    void visibilityChanged(bool visible);
+    void visibilityChanged(OverlayVisiblity visible);
 };
 
 #endif // OVERLAY_H

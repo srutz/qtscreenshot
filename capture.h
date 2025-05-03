@@ -7,6 +7,9 @@
 class Capture {
 public:
     static void captureScreenshot(const Screenshot *screenshot, QRect *selectionRect = nullptr);
+
+private:
+    static void captureScreenshotWorker(const Screenshot *screenshot, QRect *selectionRect = nullptr);
 };
 
 

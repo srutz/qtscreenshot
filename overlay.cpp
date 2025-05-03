@@ -1,6 +1,5 @@
 
 #include "overlay.h"
-#include "toast.h"
 #include "capture.h"
 #include <QScreen>
 #include <QGuiApplication>
@@ -101,12 +100,12 @@ void Overlay::keyPressEvent(QKeyEvent *event) {
 
 void Overlay::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
-    emit visibilityChanged(true);
+    emit visibilityChanged(VISIBLE);
 }
 
 void Overlay::hideEvent(QHideEvent *event) {
     QWidget::hideEvent(event);
-    emit visibilityChanged(false);
+    emit visibilityChanged(CAPTURING);
 }
 
 void Overlay::mousePressEvent(QMouseEvent *event)
@@ -127,6 +126,7 @@ void Overlay::mouseReleaseEvent(QMouseEvent *event)
         this->dismiss();
         QTimer::singleShot(300, this, [this]() {
             captureScreenshot();
+            emit visibilityChanged(HIDDEN);
         });
     }
 }

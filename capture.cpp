@@ -6,9 +6,22 @@
 #include <QScreen>
 #include <QPixmap>
 #include <QClipboard>
+#include <QTimer>
 
 
 void Capture::captureScreenshot(const Screenshot *screenshot, QRect *selectionRect)
+{
+    auto delay = screenshot->delaySeconds();
+    if (delay == 0) {
+        captureScreenshotWorker(screenshot, selectionRect);
+    } else {
+        QTimer::singleShot(delay * 1000, screenshot, [screenshot,selectionRect]() {
+            captureScreenshotWorker(screenshot, selectionRect);
+        });
+    }
+}
+
+void Capture::captureScreenshotWorker(const Screenshot *screenshot, QRect *selectionRect)
 {
     auto screen = QGuiApplication::primaryScreen();
     if (screen) {
