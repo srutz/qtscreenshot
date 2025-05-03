@@ -100,7 +100,7 @@ Screenshot::Screenshot()
 
     // setup tray icon
     {
-        auto showAction = new QAction("Show", this);
+        auto showAction = new QAction("Show QtScreenshot", this);
         connect(showAction, &QAction::triggered, this, [this]() {
             this->show();
         });
