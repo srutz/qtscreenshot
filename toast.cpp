@@ -46,10 +46,6 @@ void Toast::showToast(const QWidget *widget, const QString &message, int duratio
 {
     // Show a toast notification at the top center of the main window
     auto mainWindow = getMainWindow(widget);
-    if (!mainWindow)
-    {
-        qDebug() << "no window avail";
-    }
     Toast *toast = new Toast(message, duration);
     toast->resize(300, 80);
     toast->showAtTopCenterOf(mainWindow ? mainWindow : widget->window());
