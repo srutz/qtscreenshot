@@ -1,0 +1,9 @@
+{
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "files.associations": {
+            "qapplication": "cpp",
+            "qscreen": "cpp",
+            "chrono": "cpp"
+        },
+}
