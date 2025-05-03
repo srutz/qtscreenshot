@@ -153,5 +153,5 @@ void Overlay::captureScreenshot() const
     selectionRect = selectionRect.normalized();
     // translate selectionRect to global coordinates
     selectionRect.translate(this->mapToGlobal(QPoint(0, 0)));
-    Capture::captureScreenshot(this, &selectionRect);
+    Capture::captureScreenshot(dynamic_cast<Screenshot*>(this->parent()), &selectionRect);
 }

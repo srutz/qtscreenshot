@@ -46,7 +46,7 @@ Screenshot::Screenshot()
         screenButton->setFixedWidth(buttonWidth);
         buttonLayout->addWidget(screenButton);
         connect(screenButton, &QPushButton::clicked, this, [this]() {
-            Capture::captureScreenshot(this->m_overlay, nullptr);
+            Capture::captureScreenshot(this, nullptr);
         });
     }
 

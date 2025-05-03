@@ -1,11 +1,12 @@
 #ifndef CAPTURE_H
 #define CAPTURE_H
 
+#include "screenshot.h"
 #include <QWidget>
 
 class Capture {
 public:
-    static void captureScreenshot(const QWidget *toastParent, QRect *selectionRect = nullptr);
+    static void captureScreenshot(const Screenshot *screenshot, QRect *selectionRect = nullptr);
 };
 
 
