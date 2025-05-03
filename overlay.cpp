@@ -18,7 +18,8 @@ Overlay::Overlay(QWidget *parent)
       m_infoLabel(new QLabel(this)),
       m_mouseDown(false),
       m_mouseDownPos(-1, -1),
-      m_mousePos(-1, -1)
+      m_mousePos(-1, -1),
+      m_capturing(false)
 {
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
@@ -30,21 +31,20 @@ Overlay::Overlay(QWidget *parent)
     m_infoLabel->setStyleSheet("color: white; background-color: rgba(255, 255, 255, 100);");
 
     m_countdownTimer->setInterval(1000);
-    m_countdownTimer->connect(m_countdownTimer, &QTimer::timeout, this, [this]() {
+    m_countdownTimer->connect(m_countdownTimer, &QTimer::timeout, this, [this]()
+                              {
         m_shownTicks++;
         if (m_shownTicks >= m_visibleTickCount) {
             m_shownTicks = 0;
             m_countdownTimer->stop();
             this->dismiss();
         }
-        updateUi();
-    });
+        updateUi(); });
     auto mainLayout = new QVBoxLayout(this);
     m_infoLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     mainLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
     m_infoLabel->hide();
 }
-
 
 void Overlay::showForSelection()
 {
@@ -71,37 +71,63 @@ void Overlay::dismiss()
 void Overlay::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    // paint a semi-transparent rectangle
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(0, 0, 0, m_mouseDown ? 50 : 100));
-    painter.drawRect(this->rect());
     auto w = this->width();
     auto h = this->height();
 
     auto textColor = Qt::lightGray;
-    if (m_mouseDown) {
+    auto lineColor = QColor(0xf0, 0xf0, 0xf0);
+    if (m_mouseDown)
+    {
         // Handle mouse move event while dragging
         QRect selectionRect(m_mouseDownPos, m_mousePos);
         selectionRect = selectionRect.normalized();
 
-        painter.setPen(Qt::red);
-        painter.drawRect(selectionRect);
-        painter.setBrush(QColor(255, 0, 0, 50));
+        // Draw everything but the selection rectangle
+        painter.save();
+        QRegion outsideRegion(this->rect());
+        QRegion selectionRegion(selectionRect);
+        QRegion maskRegion = outsideRegion.subtracted(selectionRegion);
+
+        painter.setClipRegion(maskRegion);
+        painter.setBrush(QColor(0, 0, 0, 150)); // Semi-transparent background
+        painter.setPen(Qt::NoPen);
+        painter.drawRect(this->rect());
+        painter.restore();
+
+        // Draw the selection rectangle
+        painter.setPen(lineColor); // Red border with 2px width
         painter.drawRect(selectionRect.adjusted(1, 1, -1, -1));
+        painter.setPen(textColor);
+        painter.drawText(
+            QPoint(m_mouseDownPos.x(), m_mouseDownPos.y() - 4),
+            QString::fromUtf8(u8"%1").arg(selectionRect.width()));
+        painter.drawText(
+            QPoint(m_mouseDownPos.x() - 32, m_mouseDownPos.y() + 12),
+            QString::fromUtf8(u8"%1").arg(selectionRect.height()));
+    } else if (!m_capturing) {
+        // Draw the overlay without selection rectangle
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(0, 0, 0, 150)); // Semi-transparent background
+        painter.drawRect(this->rect());
     } else {
+        // paint a semi-transparent rectangle over the whole screen
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(0, 0, 0, 80));
+        painter.drawRect(this->rect());
         auto x = m_mousePos.x();
         auto y = m_mousePos.y();
         painter.setPen(textColor);
         painter.drawText(
-            QPoint(m_mousePos.x(), m_mousePos.y() - 4), 
+            QPoint(m_mousePos.x(), m_mousePos.y() - 4),
             QString::fromUtf8(u8"%1 x %2").arg(x).arg(y));
-        painter.setPen(QColor(0xf0, 0xf0, 0xf0)); // Lighter red color
+        painter.setPen(lineColor);
         painter.drawLine(x, 0, x, h);
         painter.drawLine(0, y, w, y);
     }
 }
 
-void Overlay::keyPressEvent(QKeyEvent *event) {
+void Overlay::keyPressEvent(QKeyEvent *event)
+{
     if (event->key() == Qt::Key_Escape) {
         // Your custom ESC key handling here
         event->accept();
@@ -111,12 +137,14 @@ void Overlay::keyPressEvent(QKeyEvent *event) {
     QWidget::keyPressEvent(event);
 }
 
-void Overlay::showEvent(QShowEvent *event) {
+void Overlay::showEvent(QShowEvent *event)
+{
     QWidget::showEvent(event);
     emit visibilityChanged(VISIBLE);
 }
 
-void Overlay::hideEvent(QHideEvent *event) {
+void Overlay::hideEvent(QHideEvent *event)
+{
     QWidget::hideEvent(event);
     emit visibilityChanged(CAPTURING);
 }
@@ -137,9 +165,7 @@ void Overlay::mouseReleaseEvent(QMouseEvent *event)
         m_mouseDown = false;
         this->repaint();
         this->dismiss();
-        QTimer::singleShot(300, this, [this]() {
-            captureScreenshot();
-        });
+        QTimer::singleShot(300, this, [this]() { captureScreenshot(); });
     }
 }
 
@@ -154,16 +180,16 @@ void Overlay::updateUi() const
     m_infoLabel->setText(QString::fromUtf8(
         u8"📸 QScreenShot -> 🖱️ Use mouse to select an area // ⛔ Press ESC to cancel // ⏳ %1 seconds remaining")
         .arg(QString("%1").arg(m_visibleTickCount - m_shownTicks, 2, 10, QChar('0'))));
-}   
+}
 
 void Overlay::captureScreenshot()
 {
+    m_capturing = true;
     // Capture the screenshot of the selected area
     QRect selectionRect(m_mouseDownPos, m_mousePos);
     selectionRect = selectionRect.normalized();
     // translate selectionRect to global coordinates
     selectionRect.translate(this->mapToGlobal(QPoint(0, 0)));
-    Capture::captureScreenshot(dynamic_cast<Screenshot*>(this->parent()), true, selectionRect, [this] {
-        emit visibilityChanged(HIDDEN);
-    });
+    Capture::captureScreenshot(dynamic_cast<Screenshot *>(this->parent()), true, selectionRect,
+        [this] { m_capturing = false; emit visibilityChanged(HIDDEN); });
 }

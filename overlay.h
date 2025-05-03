@@ -35,6 +35,7 @@ private:
     bool m_mouseDown;
     QPoint m_mouseDownPos;
     QPoint m_mousePos;
+    bool m_capturing;
 
 signals:
     void visibilityChanged(OverlayVisiblity visible);
