@@ -1,4 +1,3 @@
-
 #include "overlay.h"
 #include "capture.h"
 #include <QScreen>
@@ -9,12 +8,13 @@
 #include <QVBoxLayout>
 #include <QApplication>
 #include <QClipboard>
+#include <QPoint>
 
 Overlay::Overlay(QWidget *parent)
     : QWidget(parent),
       m_countdownTimer(nullptr),
       m_shownTicks(0),
-      m_visibleTickCount(10),
+      m_visibleTickCount(30),
       m_infoLabel(new QLabel(this)),
       m_mouseDown(false),
       m_mouseDownPos(-1, -1),
@@ -23,9 +23,9 @@ Overlay::Overlay(QWidget *parent)
     this->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
     this->setAttribute(Qt::WA_NoSystemBackground);
-    // this->setStyleSheet("background-color: rgba(100, 200, 100, 200);");
-    // this->setStyleSheet("background-color: red;");
     this->hide();
+    this->setMouseTracking(true); // Enable mouse tracking
+
     this->m_countdownTimer = new QTimer(this);
     m_infoLabel->setStyleSheet("color: white; background-color: rgba(255, 255, 255, 100);");
 
@@ -75,7 +75,10 @@ void Overlay::paintEvent(QPaintEvent *event)
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(0, 0, 0, m_mouseDown ? 50 : 100));
     painter.drawRect(this->rect());
+    auto w = this->width();
+    auto h = this->height();
 
+    auto textColor = Qt::lightGray;
     if (m_mouseDown) {
         // Handle mouse move event while dragging
         QRect selectionRect(m_mouseDownPos, m_mousePos);
@@ -85,6 +88,16 @@ void Overlay::paintEvent(QPaintEvent *event)
         painter.drawRect(selectionRect);
         painter.setBrush(QColor(255, 0, 0, 50));
         painter.drawRect(selectionRect.adjusted(1, 1, -1, -1));
+    } else {
+        auto x = m_mousePos.x();
+        auto y = m_mousePos.y();
+        painter.setPen(textColor);
+        painter.drawText(
+            QPoint(m_mousePos.x(), m_mousePos.y() - 4), 
+            QString::fromUtf8(u8"%1 x %2").arg(x).arg(y));
+        painter.setPen(QColor(0xf0, 0xf0, 0xf0)); // Lighter red color
+        painter.drawLine(x, 0, x, h);
+        painter.drawLine(0, y, w, y);
     }
 }
 
@@ -133,9 +146,7 @@ void Overlay::mouseReleaseEvent(QMouseEvent *event)
 void Overlay::mouseMoveEvent(QMouseEvent *event)
 {
     m_mousePos = event->pos();
-    if (m_mouseDown) {
-        repaint();
-    }
+    repaint();
 }
 
 void Overlay::updateUi() const

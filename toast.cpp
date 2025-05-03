@@ -39,7 +39,6 @@ void Toast::showAtTopCenterOf(QWidget *parentWindow)
     //int y = parentGeometry.y() + parentGeometry.height() - this->height() - 8;
     int y = parentGeometry.y() + 8;
     move(x, y);
-
     show();
 }
 
@@ -52,7 +51,7 @@ void Toast::showToast(const QWidget *widget, const QString &message, int duratio
         qDebug() << "no window avail";
     }
     Toast *toast = new Toast(message, duration);
-    toast->resize(300, 50);
+    toast->resize(300, 80);
     toast->showAtTopCenterOf(mainWindow ? mainWindow : widget->window());
 }
 

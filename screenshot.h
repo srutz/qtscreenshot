@@ -2,7 +2,6 @@
 #define SCREENSHOT_H
 
 #include "overlay.h"
-
 #include <QPixmap>
 #include <QWidget>
 #include <QLabel>

@@ -50,6 +50,7 @@ Screenshot::Screenshot()
     }
 
     buttonLayout->addSpacing(16);
+    buttonLayout->addStretch();
     buttonLayout->addWidget(new QLabel("Delay:", this));
     m_delayBox = new QSpinBox(this);
     m_delayBox->setSuffix(tr(" s"));
@@ -125,6 +126,13 @@ Screenshot::Screenshot()
         trayIcon->setContextMenu(trayIconMenu);
         trayIcon->setToolTip("Qt Screenshot");
         trayIcon->show();
+        connect(trayIcon, &QSystemTrayIcon::activated, this, [this] (auto reason) {
+            if (reason == QSystemTrayIcon::ActivationReason::Trigger || reason == QSystemTrayIcon::ActivationReason::DoubleClick) {
+                this->activateWindow();
+                this->showNormal();
+                this->raise();
+            }
+        });
     }
 }
 
