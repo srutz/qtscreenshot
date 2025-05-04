@@ -1,5 +1,6 @@
 
 #include "capture.h"
+#include "configmanager.h"
 #include "toast.h"
 #include <QGuiApplication>
 #include <QApplication>
@@ -34,7 +35,13 @@ void Capture::captureScreenshotWorker(const Screenshot *screenshot, bool hasSele
         Toast::showToast(screenshot->overlay(), msg, 3000);
         QApplication::beep();
         auto imageList = ImageList::instance();
-        imageList->addImage(ImageSpec{true, image, "Unnamed.png"});
+        QString filename = ConfigManager::instance().filenameMask();
+        // replace %d with the current date
+        filename.replace("%d", QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+        // replace %t with the current time
+        filename.replace("%t", QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss"));
+
+        imageList->addImage(ImageSpec{true, image, filename});
         imageList->setIndex(imageList->size() - 1);
         onComplete();
     }

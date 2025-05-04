@@ -1,4 +1,5 @@
 #include "galleryview.h"
+#include "toast.h"
 #include <memory>
 #include <QApplication>
 #include <QStyle>
@@ -7,8 +8,9 @@
 #include <QPushButton>
 #include <QFileInfo>
 #include <QTimer>
-
-
+#include <QFileDialog>
+#include <QStandardPaths>
+#include <QMessageBox>
 
 GalleryView::GalleryView(QWidget *parent)
     : QWidget{parent}
@@ -65,7 +67,6 @@ GalleryView::GalleryView(QWidget *parent)
     m_fileArea->setLayout(fileLayout);
     m_fileArea->setContentsMargins(QMargins(0, 9, 0, 9));
     auto saveButton = new QPushButton("Save", this);
-    //saveButton->setStyleSheet("QPushButton { border: none; }");
     auto label = new QLabel("Filename", this);
     fileLayout->addWidget(label);
     fileLayout->addWidget(m_statusLabel);
@@ -78,6 +79,35 @@ GalleryView::GalleryView(QWidget *parent)
     outerLayout->addWidget(m_fileArea);
     m_fileArea->setEnabled(false);
     QTimer::singleShot(0, this, [this] { layoutImages(); });
+
+    connect(saveButton, &QPushButton::clicked, this, [=,this]() {
+        auto currentImage = m_input->image(m_input->index());
+        if (currentImage.m_valid) {
+            // save in default pictures directory
+            auto picturesDir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+            auto filename = m_statusLabel->text();
+            // combine filename and picturesDir
+            auto filePath = QDir(picturesDir).filePath(filename);
+            // check if file exists
+            QFileInfo fileInfo(filePath);
+            if (fileInfo.exists()) {
+                auto result = QMessageBox::question(this, "File exists", "File already exists. Overwrite?", QMessageBox::Yes | QMessageBox::No);
+                if (result == QMessageBox::No) {
+                    return;
+                }
+            }
+            // save the image
+            auto result = currentImage.m_pixmap.save(filePath);
+            if (result) {
+                auto msg = QString::fromUtf8(u8"📸 Image saved to %1").arg(filePath);
+                Toast::showToast(this, msg, 3000);
+                currentImage.m_filename = filename;
+            } else {
+                auto msg = QString::fromUtf8(u8"📸 Error saving image to %1").arg(filePath);
+                Toast::showToast(this, msg, 3000);
+            }   
+        }
+    }); 
 }
 
 

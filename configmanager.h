@@ -17,7 +17,7 @@ class ConfigManager : public QObject
     static constexpr const char* SETTINGS_FILENAME = ".qtscreenshot.settings";
 
     static constexpr const char* KEY_FILENAME_MASK = "filenameMask";
-    static constexpr const char* DEFAULT_FILENAME_MASK = "screenshot_%d.txt";
+    static constexpr const char* DEFAULT_FILENAME_MASK = "screenshot_%t.png";
 
     static constexpr const char* KEY_DEFAULT_DELAY_SECONDS = "defaultDelaySeconds";
     static constexpr int DEFAULT_DELAY_SECONDS = 0;
