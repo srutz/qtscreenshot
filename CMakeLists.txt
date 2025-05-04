@@ -25,6 +25,11 @@ set(PROJECT_SOURCES
     capture.h
     toast.cpp
     toast.h
+    settings.cpp
+    settings.h
+    settings.ui
+    configmanager.cpp
+    configmanager.h
 )
 
 qt_add_executable(${PROJECT_NAME}

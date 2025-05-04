@@ -1,5 +1,7 @@
 #include "screenshot.h"
 #include "capture.h"
+#include "settings.h"
+#include "configmanager.h"
 #include <QClipboard>
 #include <QApplication>
 #include <QVBoxLayout>
@@ -55,6 +57,11 @@ Screenshot::Screenshot()
     m_delayBox = new QSpinBox(this);
     m_delayBox->setSuffix(tr(" s"));
     m_delayBox->setMaximum(180);
+    const auto &cm = ConfigManager::instance();
+    m_delayBox->setValue(cm.defaultDelaySeconds());
+    connect(&cm, &ConfigManager::defaultDelaySecondsChanged, this, [this,&cm] {
+        m_delayBox->setValue(cm.defaultDelaySeconds());
+    });
     buttonLayout->addWidget(m_delayBox);
 
     m_overlay = new Overlay(this);
@@ -72,16 +79,23 @@ Screenshot::Screenshot()
 
     // add a menu
     auto menu = new QMenuBar(this);
-    auto fileMenu = new QMenu("&File", this);
-    menu->addAction(fileMenu->menuAction());
+    auto actionsMenu = new QMenu("&Actions", this);
+    menu->addAction(actionsMenu->menuAction());
     auto helpMenu = new QMenu("&Help", this);
     menu->addAction(helpMenu->menuAction());
+
+    auto settingsAction = new QAction("&Settings", this);
+    connect(settingsAction, &QAction::triggered, this, [this]() {
+        Settings dialog(this);
+        dialog.exec();
+    });
+    actionsMenu->addAction(settingsAction);
 
     auto exitAction = new QAction("E&xit", this);
     connect(exitAction, &QAction::triggered, this, [this]() {
         QApplication::quit();
     });
-    fileMenu->addAction(exitAction);
+    actionsMenu->addAction(exitAction);
 
     auto aboutAction = new QAction("&About", this);
     connect(aboutAction, &QAction::triggered, this, [this]() {
