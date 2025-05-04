@@ -2,6 +2,8 @@
 #include "capture.h"
 #include "settings.h"
 #include "configmanager.h"
+#include "imagelist.h"
+#include <memory>
 #include <QClipboard>
 #include <QApplication>
 #include <QVBoxLayout>
@@ -17,17 +19,24 @@
 #include <QSystemTrayIcon>
 
 
-Screenshot::Screenshot()
+Screenshot::Screenshot() : QMainWindow()
 {
-    auto mainLayout = new QVBoxLayout(this);
+    auto centralwidget = new QWidget(this);
+    setCentralWidget(centralwidget);
 
-    auto buttons = new QGroupBox("Options", this);
+    m_galleryView = new GalleryView(this);
+    m_galleryView->setInput(shared_ptr<ImageList>(ImageList::instance()));
+    auto mainLayout = new QVBoxLayout(this->centralWidget());
+
+    auto buttons = new QGroupBox(this->centralWidget());
+    buttons->setTitle(QString());
     mainLayout->addWidget(buttons);
-    mainLayout->addStretch(1);
+    mainLayout->addWidget(m_galleryView);
+
     auto buttonLayout = new QHBoxLayout(buttons);
     int buttonWidth = 160;
     {
-        auto selectionButton = new QPushButton("Selection", this);
+        auto selectionButton = new QPushButton("Select region", this);
         selectionButton->setFixedWidth(buttonWidth);
         buttonLayout->addWidget(selectionButton);
         connect(selectionButton, &QPushButton::clicked, this, [this]() {
@@ -67,6 +76,9 @@ Screenshot::Screenshot()
     m_overlay = new Overlay(this);
     setWindowTitle(tr("Screenshot"));
     adjustSize();
+    //setMinimumHeight(500);
+    resize(800, 600);
+
     connect(m_overlay, &Overlay::visibilityChanged, this, [this](OverlayVisiblity visible) {
         if (visible == VISIBLE) {
             this->hide();
@@ -78,11 +90,13 @@ Screenshot::Screenshot()
     });
 
     // add a menu
-    auto menu = new QMenuBar(this);
+    auto menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
     auto actionsMenu = new QMenu("&Actions", this);
-    menu->addAction(actionsMenu->menuAction());
+    menuBar->addAction(actionsMenu->menuAction());
     auto helpMenu = new QMenu("&Help", this);
-    menu->addAction(helpMenu->menuAction());
+    menuBar->addAction(helpMenu->menuAction());
+
 
     auto settingsAction = new QAction("&Settings", this);
     connect(settingsAction, &QAction::triggered, this, [this]() {

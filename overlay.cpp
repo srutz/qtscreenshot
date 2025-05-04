@@ -44,6 +44,8 @@ Overlay::Overlay(QWidget *parent)
     m_infoLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     mainLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
     m_infoLabel->hide();
+    auto geo = QGuiApplication::primaryScreen()->geometry();
+    this->setGeometry(geo);
 }
 
 void Overlay::showForSelection()

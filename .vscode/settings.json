@@ -15,6 +15,13 @@
             "tuple": "cpp",
             "type_traits": "cpp",
             "utility": "cpp",
-            "qdebug": "cpp"
+            "qdebug": "cpp",
+            "memory": "cpp",
+            "qtimer": "cpp",
+            "qvboxlayout": "cpp",
+            "qlabel": "cpp",
+            "qwindow": "cpp",
+            "qmainwindow": "cpp",
+            "variant": "cpp"
         },
 }

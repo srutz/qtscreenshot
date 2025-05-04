@@ -33,6 +33,9 @@ void Capture::captureScreenshotWorker(const Screenshot *screenshot, bool hasSele
             : QString::fromUtf8(u8"📸 Capture complete. Screenshot saved to clipboard.");
         Toast::showToast(screenshot->overlay(), msg, 3000);
         QApplication::beep();
+        auto imageList = ImageList::instance();
+        imageList->addImage(ImageSpec{true, image, "Unnamed.png"});
+        imageList->setIndex(imageList->size() - 1);
         onComplete();
     }
 }
