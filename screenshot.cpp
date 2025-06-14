@@ -14,7 +14,11 @@
 #include <QDialog>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
+#include <QCoreApplication>
 
+// Then use:
+QString version = QT_VERSION_STR;
+QString runtimeVersion = qVersion();
 
 Screenshot::Screenshot()
 {
@@ -85,8 +89,13 @@ Screenshot::Screenshot()
     connect(aboutAction, &QAction::triggered, this, [this]() {
         auto msg = QString::fromUtf8(u8"🌟 QScreenShot\n\n"
             u8"🖼️ A simple screenshot tool.\n\n"
+            u8"🖥️ Compile-Version: %1\n"
+            u8"🕒 Runtime-Version: %2\n\n"
             u8"👨‍💻 Author: Stepan Rutz / stepan.rutz AT stepanrutz.com\n"
-            u8"📦 Version: 1.0.0");
+            u8"📦 Version: 1.0.0")
+            .arg(QString::fromUtf8(QT_VERSION_STR))
+            .arg(QString::fromUtf8(qVersion()))
+            ;
         QString appName = QApplication::applicationName();
         QString appVersion = QApplication::applicationVersion();
         QMessageBox aboutBox(this);
