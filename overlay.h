@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QLabel>
 
+enum OverlayVisiblity { HIDDEN, CAPTURING, VISIBLE };
+
 class Overlay : public QWidget {
     Q_OBJECT
 
@@ -14,7 +16,7 @@ public:
 
 private:
     void updateUi() const;
-    void captureScreenshot() const;
+    void captureScreenshot();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -33,9 +35,10 @@ private:
     bool m_mouseDown;
     QPoint m_mouseDownPos;
     QPoint m_mousePos;
+    bool m_capturing;
 
 signals:
-    void visibilityChanged(bool visible);
+    void visibilityChanged(OverlayVisiblity visible);
 };
 
 #endif // OVERLAY_H

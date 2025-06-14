@@ -16,6 +16,7 @@ find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
+    commonresources.qrc
     main.cpp
     screenshot.cpp
     screenshot.h
@@ -25,6 +26,19 @@ set(PROJECT_SOURCES
     capture.h
     toast.cpp
     toast.h
+    settings.cpp
+    settings.h
+    settings.ui
+    configmanager.cpp
+    configmanager.h
+    animatedwidget.cpp
+    animatedwidget.h
+    galleryview.cpp
+    galleryview.h
+    imagelist.cpp
+    imagelist.h
+    imageview.cpp
+    imageview.h
 )
 
 qt_add_executable(${PROJECT_NAME}

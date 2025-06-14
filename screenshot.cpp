@@ -1,6 +1,9 @@
 #include "screenshot.h"
-#include "toast.h"
 #include "capture.h"
+#include "settings.h"
+#include "configmanager.h"
+#include "imagelist.h"
+#include <memory>
 #include <QClipboard>
 #include <QApplication>
 #include <QVBoxLayout>
@@ -20,17 +23,24 @@
 QString version = QT_VERSION_STR;
 QString runtimeVersion = qVersion();
 
-Screenshot::Screenshot()
+Screenshot::Screenshot() : QMainWindow()
 {
-    auto mainLayout = new QVBoxLayout(this);
+    auto centralwidget = new QWidget(this);
+    setCentralWidget(centralwidget);
 
-    auto buttons = new QGroupBox("Options", this);
+    m_galleryView = new GalleryView(this);
+    m_galleryView->setInput(shared_ptr<ImageList>(ImageList::instance()));
+    auto mainLayout = new QVBoxLayout(this->centralWidget());
+
+    auto buttons = new QGroupBox(this->centralWidget());
+    buttons->setTitle(QString());
     mainLayout->addWidget(buttons);
-    mainLayout->addStretch(1);
+    mainLayout->addWidget(m_galleryView);
+
     auto buttonLayout = new QHBoxLayout(buttons);
     int buttonWidth = 160;
     {
-        auto selectionButton = new QPushButton("Selection", this);
+        auto selectionButton = new QPushButton("Select region", this);
         selectionButton->setFixedWidth(buttonWidth);
         buttonLayout->addWidget(selectionButton);
         connect(selectionButton, &QPushButton::clicked, this, [this]() {
@@ -50,22 +60,33 @@ Screenshot::Screenshot()
         screenButton->setFixedWidth(buttonWidth);
         buttonLayout->addWidget(screenButton);
         connect(screenButton, &QPushButton::clicked, this, [this]() {
-            Capture::captureScreenshot(this, nullptr);
+            Capture::captureScreenshot(this, false, QRect(), [] {});
         });
     }
 
     buttonLayout->addSpacing(16);
+    buttonLayout->addStretch();
     buttonLayout->addWidget(new QLabel("Delay:", this));
     m_delayBox = new QSpinBox(this);
     m_delayBox->setSuffix(tr(" s"));
     m_delayBox->setMaximum(180);
+    const auto &cm = ConfigManager::instance();
+    m_delayBox->setValue(cm.defaultDelaySeconds());
+    connect(&cm, &ConfigManager::defaultDelaySecondsChanged, this, [this,&cm] {
+        m_delayBox->setValue(cm.defaultDelaySeconds());
+    });
     buttonLayout->addWidget(m_delayBox);
 
     m_overlay = new Overlay(this);
     setWindowTitle(tr("Screenshot"));
     adjustSize();
-    connect(m_overlay, &Overlay::visibilityChanged, this, [this](bool visible) {
-        if (visible) {
+    //setMinimumHeight(500);
+    resize(800, 600);
+
+    connect(m_overlay, &Overlay::visibilityChanged, this, [this](OverlayVisiblity visible) {
+        if (visible == VISIBLE) {
+            this->hide();
+        } else if (visible == CAPTURING) {
             this->hide();
         } else {
             this->show();
@@ -73,17 +94,26 @@ Screenshot::Screenshot()
     });
 
     // add a menu
-    auto menu = new QMenuBar(this);
-    auto fileMenu = new QMenu("&File", this);
-    menu->addAction(fileMenu->menuAction());
+    auto menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
+    auto actionsMenu = new QMenu("&Actions", this);
+    menuBar->addAction(actionsMenu->menuAction());
     auto helpMenu = new QMenu("&Help", this);
-    menu->addAction(helpMenu->menuAction());
+    menuBar->addAction(helpMenu->menuAction());
+
+
+    auto settingsAction = new QAction("&Settings", this);
+    connect(settingsAction, &QAction::triggered, this, [this]() {
+        Settings dialog(this);
+        dialog.exec();
+    });
+    actionsMenu->addAction(settingsAction);
 
     auto exitAction = new QAction("E&xit", this);
     connect(exitAction, &QAction::triggered, this, [this]() {
         QApplication::quit();
     });
-    fileMenu->addAction(exitAction);
+    actionsMenu->addAction(exitAction);
 
     auto aboutAction = new QAction("&About", this);
     connect(aboutAction, &QAction::triggered, this, [this]() {
@@ -133,6 +163,13 @@ Screenshot::Screenshot()
         trayIcon->setContextMenu(trayIconMenu);
         trayIcon->setToolTip("Qt Screenshot");
         trayIcon->show();
+        connect(trayIcon, &QSystemTrayIcon::activated, this, [this] (auto reason) {
+            if (reason == QSystemTrayIcon::ActivationReason::Trigger || reason == QSystemTrayIcon::ActivationReason::DoubleClick) {
+                this->activateWindow();
+                this->showNormal();
+                this->raise();
+            }
+        });
     }
 }
 
