@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(qtscreenshot VERSION 0.1 LANGUAGES CXX)
 
 
+
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -15,30 +16,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
-set(PROJECT_SOURCES
-    commonresources.qrc
-    main.cpp
-    screenshot.cpp
-    screenshot.h
-    overlay.cpp
-    overlay.h
-    capture.cpp
-    capture.h
-    toast.cpp
-    toast.h
-    settings.cpp
-    settings.h
-    settings.ui
-    configmanager.cpp
-    configmanager.h
-    animatedwidget.cpp
-    animatedwidget.h
-    galleryview.cpp
-    galleryview.h
-    imagelist.cpp
-    imagelist.h
-    imageview.cpp
-    imageview.h
+# Recursively find all .h and .hpp files in src/ and subdirectories  
+file(GLOB_RECURSE PROJECT_SOURCES
+    "src/*.h"
+    "src/*.cpp"
+    "src/*.qrc"
+    "src/*.ui"
 )
 
 qt_add_executable(${PROJECT_NAME}
