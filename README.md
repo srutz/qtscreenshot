@@ -33,7 +33,7 @@ cmake -B build -S . -DCMAKE_PREFIX_PATH=/Users/sr/Qt/6.9.1/macos
 
 ## Fonts
 
-Fonts from https://github.com/tobiasroeder/lucide-icon-font/tree/main
+Iconfont from https://github.com/tobiasroeder/lucide-icon-font/tree/main
 
 ## Author
 
