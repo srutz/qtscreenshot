@@ -1,5 +1,6 @@
 #include "overlay.h"
 #include "capture.h"
+#include "toast.h"
 #include <QScreen>
 #include <QGuiApplication>
 #include <QTimer>
@@ -31,15 +32,17 @@ Overlay::Overlay(QWidget *parent)
     m_infoLabel->setStyleSheet("color: white; background-color: rgba(255, 255, 255, 100);");
 
     m_countdownTimer->setInterval(1000);
-    m_countdownTimer->connect(m_countdownTimer, &QTimer::timeout, this, [this]()
-                              {
+    m_countdownTimer->connect(m_countdownTimer, &QTimer::timeout, this, [this]() {
         m_shownTicks++;
         if (m_shownTicks >= m_visibleTickCount) {
             m_shownTicks = 0;
             m_countdownTimer->stop();
             this->dismiss();
+            emit visibilityChanged(HIDDEN);
+            Toast::showToast(this, "Screenshot Timeout expired, no screenshot taken.", 3000);
         }
-        updateUi(); });
+        updateUi(); 
+    });
     auto mainLayout = new QVBoxLayout(this);
     m_infoLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     mainLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
@@ -60,7 +63,10 @@ void Overlay::showForSelection()
     updateUi();
 
     /* emergency timeout after 5 minutes */
-    QTimer::singleShot(5 * 60 * 1000, this, [this] { this->dismiss(); });
+    QTimer::singleShot(5 * 60 * 1000, this, [this] { 
+        this->dismiss(); 
+        emit visibilityChanged(HIDDEN);
+    });
 }
 
 void Overlay::dismiss()
@@ -134,6 +140,7 @@ void Overlay::keyPressEvent(QKeyEvent *event)
         // Your custom ESC key handling here
         event->accept();
         this->dismiss();
+        emit visibilityChanged(HIDDEN);
         return;
     }
     QWidget::keyPressEvent(event);
@@ -192,6 +199,8 @@ void Overlay::captureScreenshot()
     selectionRect = selectionRect.normalized();
     // translate selectionRect to global coordinates
     selectionRect.translate(this->mapToGlobal(QPoint(0, 0)));
-    Capture::captureScreenshot(dynamic_cast<Screenshot *>(this->parent()), true, selectionRect,
-        [this] { m_capturing = false; emit visibilityChanged(HIDDEN); });
+    Capture::captureScreenshot(dynamic_cast<Screenshot *>(this->parent()), true, selectionRect,[this] { 
+        m_capturing = false;
+        emit visibilityChanged(HIDDEN);
+    });
 }

@@ -22,6 +22,11 @@
             "qlabel": "cpp",
             "qwindow": "cpp",
             "qmainwindow": "cpp",
-            "variant": "cpp"
+            "variant": "cpp",
+            "qstring": "cpp",
+            "qpushbutton": "cpp",
+            "deque": "cpp",
+            "string": "cpp",
+            "__split_buffer": "cpp"
         },
 }

@@ -1,5 +1,6 @@
 #include "galleryview.h"
 #include "toast.h"
+#include "util.h"
 #include <memory>
 #include <QApplication>
 #include <QStyle>
@@ -60,13 +61,14 @@ GalleryView::GalleryView(QWidget *parent)
 
     auto outerLayout = new QVBoxLayout(this);
     this->setLayout(outerLayout);
-    horizontalWrapper->setStyleSheet("background-color: black");
+    horizontalWrapper->setStyleSheet("background-color: #737373");
 
     m_fileArea = new QWidget(this);
     auto fileLayout = new QHBoxLayout(this);
     m_fileArea->setLayout(fileLayout);
     m_fileArea->setContentsMargins(QMargins(0, 9, 0, 9));
     auto saveButton = new QPushButton("Save", this);
+    Util::applyFlatButtonStyle(saveButton);
     auto label = new QLabel("Filename", this);
     fileLayout->addWidget(label);
     fileLayout->addWidget(m_statusLabel);
@@ -157,8 +159,8 @@ void GalleryView::step(int direction)
     auto duration = 250;
     if (direction > 0) {
         m_transitioning = true;
-        m_imageViews[0]->setPositionA(QPoint(0, 0), duration);
-        m_imageViews[1]->setPositionA(QPoint(size.width(), 0), duration, [=,this] {
+        m_imageViews[2]->setPositionA(QPoint(0, 0), duration);
+        m_imageViews[1]->setPositionA(QPoint(-size.width(), 0), duration, [=,this] {
             m_input->step(direction);
             rehashImage();
             layoutImages();
@@ -166,8 +168,8 @@ void GalleryView::step(int direction)
         });
     } else if (direction < 0) {
         m_transitioning = true;
-        m_imageViews[2]->setPositionA(QPoint(0, 0), duration);
-        m_imageViews[1]->setPositionA(QPoint(-size.width(), 0), duration, [=,this] {
+        m_imageViews[0]->setPositionA(QPoint(0, 0), duration);
+        m_imageViews[1]->setPositionA(QPoint(size.width(), 0), duration, [=,this] {
             m_input->step(direction);
             rehashImage();
             layoutImages();
@@ -182,9 +184,9 @@ void GalleryView::rehashImage()
     auto currentImage = m_input->image(m_input->index());
     auto prevImage = m_input->image(m_input->index() -1);
     auto nextImage = m_input->image(m_input->index() + 1);
-    setImageSpec(nextImage, m_imageViews.at(0).get());
+    setImageSpec(prevImage, m_imageViews.at(0).get());
     setImageSpec(currentImage, m_imageViews.at(1).get(), true);
-    setImageSpec(prevImage, m_imageViews.at(2).get());
+    setImageSpec(nextImage, m_imageViews.at(2).get());
 
     QPixmap transparent = QPixmap(QSize(48, 48));
     transparent.fill(Qt::transparent);

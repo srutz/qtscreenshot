@@ -27,6 +27,10 @@ cmake --build build
 ./build/QtScreenshot
 ```
 
+## Fonts
+
+Fonts from https://github.com/tobiasroeder/lucide-icon-font/tree/main
+
 ## Author
 
 Stepan Rutz. No warranty, no liability. Use at your own risk.

@@ -3,10 +3,12 @@
 
 #include "overlay.h"
 #include "galleryview.h"
+#include "sheet.h"
 #include <QPixmap>
 #include <QMainWindow>
 #include <QLabel>
 #include <QSpinBox>
+#include <QAction>
 #include <QCheckBox>
 #include <QPushButton>
 
@@ -23,13 +25,21 @@ public:
     int delaySeconds() const { return m_delayBox->value(); }
 
 protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
 
 private:
+    QAction *m_aboutAction;
+    QAction *m_settingsAction;
     Overlay  *m_overlay;
     QSpinBox *m_delayBox;
     GalleryView *m_galleryView;
+    Sheet *m_sheet = nullptr;
+    QWidget *m_sheetContent = nullptr;
+    
+    void setupSheet();
 };
 
 #endif // SCREENSHOT_H
