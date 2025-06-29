@@ -17,6 +17,10 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 ```
 
+### For Mac
+
+cmake -B build -S . -DCMAKE_PREFIX_PATH=/Users/sr/Qt/6.9.1/macos
+
 
 
 

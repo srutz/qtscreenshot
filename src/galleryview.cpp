@@ -1,6 +1,7 @@
 #include "galleryview.h"
 #include "toast.h"
 #include "util.h"
+#include "ocr.h"
 #include <memory>
 #include <QApplication>
 #include <QStyle>
@@ -12,6 +13,9 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QMessageBox>
+#include <QElapsedTimer>
+#include <QThread>
+#include <QClipboard>
 
 GalleryView::GalleryView(QWidget *parent)
     : QWidget{parent}
@@ -73,7 +77,35 @@ GalleryView::GalleryView(QWidget *parent)
     fileLayout->addWidget(label);
     fileLayout->addWidget(m_statusLabel);
     fileLayout->addWidget(saveButton);
+
+    auto ocrButton = new QPushButton("OCR", this);
+    Util::applyFlatButtonStyle(ocrButton);
+    connect(ocrButton, &QPushButton::clicked, this, [=,this]() {
+        auto thread = new QThread();
+        thread->setObjectName("Ocr-Thread");
+        auto currentImage = m_input->image(m_input->index());
+        auto ocr = new Ocr();
+        ocr->setImage(currentImage.m_pixmap.toImage());
+        ocr->moveToThread(thread);
+        connect(thread, &QThread::started, ocr, &Ocr::startWork);
+        QElapsedTimer timer;
+        connect(ocr, &Ocr::completed, this, [=,this](OcrResult result) {
+            if (result.exitCode == 0) {
+                Toast::showToast(this, QString::fromUtf8(u8"📝 OCR completed in %1 ms. Content copied to clipboard.").arg(timer.elapsed()), 3000);
+                QApplication::clipboard()->setText(result.text);
+            } else {
+                Toast::showToast(this, QString::fromUtf8(u8"❌ OCR failed with exit code %1").arg(result.exitCode), 3000);
+            }
+            thread->quit();
+            thread->wait();
+            thread->deleteLater();
+            ocr->deleteLater();
+        });
+        thread->start();
+    });
+    fileLayout->addWidget(ocrButton);
     fileLayout->addStretch();
+
 
     outerLayout->setContentsMargins(0, 4, 0, 4);
     outerLayout->setSpacing(0);
