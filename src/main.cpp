@@ -4,7 +4,28 @@
 #include <QClipboard>
 #include <QFontDatabase>
 
+
 #include "screenshot.h"
+
+#ifdef Q_OS_MAC
+#include <AVFoundation/AVFoundation.h>
+
+bool requestScreenRecordingPermission() {
+    if (@available(macOS 10.15, *)) {
+        CGRequestScreenCaptureAccess();
+        return CGPreflightScreenCaptureAccess();
+    }
+    return true;
+}
+#else
+
+bool requestScreenRecordingPermission() {
+    // On non-macOS platforms, we assume permission is granted.
+    return true;
+}
+
+#endif
+
 
 
 int main(int argc, char *argv[])
@@ -26,5 +47,4 @@ int main(int argc, char *argv[])
     screenshot.show();
     return app.exec();
 }
-
 
