@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QCoreApplication>
+#include <QMouseEvent>
 
 // Then use:
 QString version = QT_VERSION_STR;
@@ -295,4 +296,98 @@ void Screenshot::resizeEvent(QResizeEvent *event) {
     /* invoke the layout method on the sheet it you want it
      * to adjust its size during resizing of its parent */
     m_sheet->layout(false);
+}
+
+void Screenshot::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        m_resizeDirection = getResizeDirection(event->pos());
+        if (m_resizeDirection != NoResize) {
+            m_resizing = true;
+            m_lastMousePos = event->globalPosition().toPoint();
+            event->accept();
+        } else {
+            // If not resizing, allow dragging the window
+            m_lastMousePos = event->globalPosition().toPoint();
+            event->ignore();
+        }
+    }
+}
+
+void Screenshot::mouseMoveEvent(QMouseEvent *event) {
+    if (m_resizing) {
+        QPoint diff = event->globalPosition().toPoint() - m_lastMousePos;
+        QRect newRect = geometry();
+
+        if (m_resizeDirection & North) {
+            newRect.setTop(newRect.top() + diff.y());
+        }
+        if (m_resizeDirection & South) {
+            newRect.setBottom(newRect.bottom() + diff.y());
+        }
+        if (m_resizeDirection & West) {
+            newRect.setLeft(newRect.left() + diff.x());
+        }
+        if (m_resizeDirection & East) {
+            newRect.setRight(newRect.right() + diff.x());
+        }
+        setGeometry(newRect);
+        m_lastMousePos = event->globalPosition().toPoint();
+        event->accept();
+    } else {
+        setCursorShape(getResizeDirection(event->pos()));
+        event->ignore();
+    }
+}
+
+void Screenshot::mouseReleaseEvent(QMouseEvent *event) {
+    if (m_resizing) {
+        m_resizing = false;
+        setCursorShape(NoResize); // Reset cursor
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
+
+int Screenshot::getResizeDirection(const QPoint &pos) {
+    int direction = NoResize;
+    int border = 8; // Resize border width
+
+    if (pos.y() < border) {
+        direction |= North;
+    } else if (pos.y() > height() - border) {
+        direction |= South;
+    }
+    if (pos.x() < border) {
+        direction |= West;
+    } else if (pos.x() > width() - border) {
+        direction |= East;
+    }
+    return direction;
+}
+
+void Screenshot::setCursorShape(int direction) {
+    Qt::CursorShape cursorShape = Qt::ArrowCursor;
+    switch (direction) {
+        case North:
+        case South:
+            cursorShape = Qt::SizeVerCursor;
+            break;
+        case East:
+        case West:
+            cursorShape = Qt::SizeHorCursor;
+            break;
+        case NorthEast:
+        case SouthWest:
+            cursorShape = Qt::SizeBDiagCursor;
+            break;
+        case NorthWest:
+        case SouthEast:
+            cursorShape = Qt::SizeFDiagCursor;
+            break;
+        default:
+            cursorShape = Qt::ArrowCursor;
+            break;
+    }
+    setCursor(cursorShape);
 }
