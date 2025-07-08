@@ -1,6 +1,7 @@
 #include "imageview.h"
 #include "imagelayer.h"
 #include "absolutelayout.h"
+#include "marker.h"
 
 #include <QPainter>
 #include <QLabel>
@@ -42,13 +43,11 @@ void ImageView::showPixmap(QPixmap pixmap)
 void ImageView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     // add a QLabel at the mouse position
-    auto label = new QLabel(this);
-    label->setText("Hello");
-    label->setStyleSheet("QLabel { color : #efefef; padding: 2px; background-color: orange; }");
-    label->setAlignment(Qt::AlignCenter);
+    auto marker = new Marker(this);
+    marker->setText("Mark1");
     auto x = event->pos().x();
     auto y = event->pos().y();
     auto layout = qobject_cast<AbsoluteLayout*>(this->layout());
-    layout->addWidget(label, QPoint(x, y), AbsoluteLayout::SizeMode::OWNSIZE);
+    layout->addWidget(marker, QPoint(x, y), AbsoluteLayout::SizeMode::OWNSIZE);
 }
 

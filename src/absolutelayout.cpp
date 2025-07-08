@@ -83,6 +83,7 @@ void AbsoluteLayout::setGeometry(const QRect &rect)
         {
             size = QSize(rect.width(), rect.height());
         }
+
         // Make sure the widget is visible and positioned correctly
         QRect itemGeometry(rect.topLeft() + pos, size);
         item->layoutItem()->setGeometry(itemGeometry);
