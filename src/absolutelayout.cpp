@@ -13,19 +13,7 @@ void AbsoluteLayout::addWidget(QWidget *widget, int x, int y, const SizeMode &si
     auto marker = qobject_cast<Marker*>(widget);
     if (marker) {
         connect(marker, &Marker::positionChanged, this, [this,marker,item] (const QPoint &pos) {
-            // change the coords in the item
-            //item->setPosition(marker->pos());
-            //item->layoutItem()->setGeometry(QRect(pos, item->layoutItem()->sizeHint()));
             setItemPosition(marker, pos);
-            // force update of the layout
-            qDebug() << "Marker position changed to" << pos;
-            invalidate();
-            // Force immediate geometry recalculation
-            if (parentWidget()) {
-                parentWidget()->updateGeometry();
-            }
-            // Trigger setGeometry with current geometry to reposition items
-            setGeometry(geometry());
         });
     }
 }
