@@ -1,12 +1,33 @@
-
-
 #include "absolutelayout.h"
+#include "marker.h"
+#include <QDebug>
 
 // Add widget with absolute position
 void AbsoluteLayout::addWidget(QWidget *widget, int x, int y, const SizeMode &sizeMode)
 {
     addChildWidget(widget);
-    itemList.append(new AbsoluteLayoutItem(widget, QPoint(x, y), sizeMode));
+    auto item = new AbsoluteLayoutItem(widget, QPoint(x, y), sizeMode);
+    itemList.append(item);
+
+    // check if widget is of class Marker
+    auto marker = qobject_cast<Marker*>(widget);
+    if (marker) {
+        connect(marker, &Marker::positionChanged, this, [this,marker,item] (const QPoint &pos) {
+            // change the coords in the item
+            //item->setPosition(marker->pos());
+            //item->layoutItem()->setGeometry(QRect(pos, item->layoutItem()->sizeHint()));
+            setItemPosition(marker, pos);
+            // force update of the layout
+            qDebug() << "Marker position changed to" << pos;
+            invalidate();
+            // Force immediate geometry recalculation
+            if (parentWidget()) {
+                parentWidget()->updateGeometry();
+            }
+            // Trigger setGeometry with current geometry to reposition items
+            setGeometry(geometry());
+        });
+    }
 }
 
 void AbsoluteLayout::addWidget(QWidget *widget, const QPoint &position, const SizeMode &sizeMode)
@@ -84,6 +105,8 @@ void AbsoluteLayout::setGeometry(const QRect &rect)
             size = QSize(rect.width(), rect.height());
         }
 
+        qDebug() << "Setting geometry for item at position" << pos << "with size" << size;
+
         // Make sure the widget is visible and positioned correctly
         QRect itemGeometry(rect.topLeft() + pos, size);
         item->layoutItem()->setGeometry(itemGeometry);
@@ -112,3 +135,4 @@ void AbsoluteLayout::setItemPosition(QWidget *widget, const QPoint &position)
         }
     }
 }
+

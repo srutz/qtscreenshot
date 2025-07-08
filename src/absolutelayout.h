@@ -36,6 +36,9 @@ public:
     // Helper methods
     void setItemPosition(int index, const QPoint& position);
     void setItemPosition(QWidget* widget, const QPoint& position);
+    
+    // Method to connect marker signals for automatic position updates
+    void connectMarker(QWidget* marker);
 
 private:
     class AbsoluteLayoutItem {
