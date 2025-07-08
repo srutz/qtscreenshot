@@ -3,21 +3,21 @@
 #include "absolutelayout.h"
 
 // Add widget with absolute position
-void AbsoluteLayout::addWidget(QWidget *widget, int x, int y)
+void AbsoluteLayout::addWidget(QWidget *widget, int x, int y, const SizeMode &sizeMode)
 {
     addChildWidget(widget);
-    itemList.append(new AbsoluteLayoutItem(widget, QPoint(x, y)));
+    itemList.append(new AbsoluteLayoutItem(widget, QPoint(x, y), sizeMode));
 }
 
-void AbsoluteLayout::addWidget(QWidget *widget, const QPoint &position)
+void AbsoluteLayout::addWidget(QWidget *widget, const QPoint &position, const SizeMode &sizeMode)
 {
-    addWidget(widget, position.x(), position.y());
+    addWidget(widget, position.x(), position.y(), sizeMode);
 }
 
 // Required QLayout interface
 void AbsoluteLayout::addItem(QLayoutItem *item)
 {
-    itemList.append(new AbsoluteLayoutItem(item, QPoint(0, 0)));
+    itemList.append(new AbsoluteLayoutItem(item, QPoint(0, 0), SizeMode::FULLSIZE));
 }
 
 QSize AbsoluteLayout::sizeHint() const
@@ -52,7 +52,7 @@ QLayoutItem* AbsoluteLayout::takeAt(int index)
     if (index >= 0 && index < itemList.size())
     {
         AbsoluteLayoutItem *layoutItem = itemList.takeAt(index);
-        QLayoutItem *item = layoutItem->layoutItem();
+        QLayoutItem *item = layoutItem->releaseLayoutItem();
         delete layoutItem;
         return item;
     }
@@ -74,8 +74,18 @@ void AbsoluteLayout::setGeometry(const QRect &rect)
         QPoint pos = item->position();
         QSize size = item->layoutItem()->sizeHint();
 
-        // You can add logic here for relative positioning, scaling, etc.
-        item->layoutItem()->setGeometry(QRect(pos, size));
+        // If the item doesn't provide a valid size hint, use the available space
+        if (size.width() <= 0 || size.height() <= 0) {
+            size = QSize(rect.width() - pos.x(), rect.height() - pos.y());
+        }
+
+        if (item->sizeMode() == SizeMode::FULLSIZE)
+        {
+            size = QSize(rect.width(), rect.height());
+        }
+        // Make sure the widget is visible and positioned correctly
+        QRect itemGeometry(rect.topLeft() + pos, size);
+        item->layoutItem()->setGeometry(itemGeometry);
     }
 }
 

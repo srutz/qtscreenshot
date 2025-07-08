@@ -1,4 +1,3 @@
-
 #include "imagelayer.h"
 #include <QPainter>
 #include <QPixmap>
@@ -68,6 +67,15 @@ void ImageLayer::paintEvent(QPaintEvent *event)
             painter.drawPixmap(targetRect, m_pixmap, m_pixmap.rect());
         }
     }
+}
+
+
+QSize ImageLayer::sizeHint() const
+{
+    if (!m_pixmap.isNull()) {
+        return m_pixmap.size();
+    }
+    return QSize(400, 300); // Default size
 }
 
 

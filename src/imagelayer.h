@@ -18,6 +18,7 @@ public:
     void showErrorImage();
     void showFile(QString path);
     void paintEvent(QPaintEvent *event) override;
+    QSize sizeHint() const override;
 };
 
 #endif // IMAGELAYER_H

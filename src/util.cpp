@@ -35,7 +35,6 @@ void Util::applyButtonStyle(QPushButton *button)
         "}"
         "QPushButton:focus {"
         "    outline: none;"
-        "    box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.5);"
         "}");
 }
 
@@ -63,7 +62,6 @@ void Util::applyFlatButtonStyle(QPushButton *button)
         "    background-color: #f0f0f0;"
         "    border-color: #d4d4d4;"
         "    color: #a0a0a0;"
-        "    cursor: not-allowed;"
         "}"
         "QPushButton:focus {"
         "    outline: none;"

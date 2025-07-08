@@ -3,6 +3,7 @@
 #include "absolutelayout.h"
 
 #include <QPainter>
+#include <QLabel>
 
 
 ImageView::ImageView(QWidget *parent)
@@ -34,7 +35,20 @@ void ImageView::showPixmap(QPixmap pixmap)
     imageLayer->showPixmap(pixmap);
 
     auto layout = qobject_cast<AbsoluteLayout*>(this->layout());
-    layout->addWidget(imageLayer, QPoint(0, 0));
-    qDebug() << "Layout " << layout->metaObject()->className() << " for ImageView " << this->objectName();
+    layout->addWidget(imageLayer, QPoint(0, 0), AbsoluteLayout::SizeMode::FULLSIZE);
+}
+
+// handle doubleclick
+void ImageView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    // add a QLabel at the mouse position
+    auto label = new QLabel(this);
+    label->setText("Hello");
+    label->setStyleSheet("QLabel { color : #efefef; padding: 2px; background-color: orange; }");
+    label->setAlignment(Qt::AlignCenter);
+    auto x = event->pos().x();
+    auto y = event->pos().y();
+    auto layout = qobject_cast<AbsoluteLayout*>(this->layout());
+    layout->addWidget(label, QPoint(x, y), AbsoluteLayout::SizeMode::OWNSIZE);
 }
 

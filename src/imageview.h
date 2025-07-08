@@ -21,6 +21,9 @@ public:
     void setLabel(const QString &l);
 
     void showPixmap(QPixmap pixmap);
+protected:
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    
 
 signals:
 };
